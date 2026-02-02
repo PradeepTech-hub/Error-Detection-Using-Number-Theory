@@ -131,4 +131,3 @@ It provides a clear simulation of data transmission and corruption detection.
 Pradeep M
 
 
-1. Clone the repository:
