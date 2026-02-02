@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Error Detection - Number Theory</title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <div class="bg"></div>
+
+  <main class="container">
+    <header class="header">
+      <div>
+        <h1>Analysis of Error Detection Techniques Using Number Theory</h1>
+        <p class="subtitle">Sender -&gt; Channel -&gt; Receiver (checksum = data mod key/modulus)</p>
+      </div>
+      <div class="header-right">
+        <button id="themeToggle" class="btn btn-ghost" type="button" aria-label="Toggle theme">Theme</button>
+        <div id="status" class="pill pill-neutral">Step 1: Enter data + key/modulus</div>
+      </div>
+    </header>
+
+    <section class="grid">
+      <article class="card">
+        <div class="card-title">1) Sender</div>
+        <div class="form">
+          <label>
+            <span>Data (integer)</span>
+            <input id="sentData" inputmode="numeric" placeholder="e.g., 1234" />
+          </label>
+          <label>
+            <span>Key/Modulus</span>
+            <input id="prime" inputmode="numeric" placeholder="e.g., 7" />
+          </label>
+
+          <div class="row">
+            <div class="kv">
+              <div class="k">Sender checksum</div>
+              <div id="senderChecksum" class="v">-</div>
+              <div id="senderModulo" class="muted mono">-</div>
+            </div>
+            <button id="btnCompute" class="btn btn-primary">Compute checksum</button>
+          </div>
+
+          <div class="row">
+            <div class="kv">
+              <div class="k">Transmitted frame (data + checksum)</div>
+              <div id="txFrameSender" class="v mono">-</div>
+            </div>
+          </div>
+
+          <div class="hint">Key/modulus can be any non-zero integer (e.g., 7, 10, 12...).</div>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="card-title">2) Channel</div>
+        <div class="form">
+          <label>
+            <span>Received data</span>
+            <input id="receivedData" inputmode="numeric" placeholder="copy from sender" />
+          </label>
+
+          <div class="row">
+            <button id="btnCopy" class="btn">Copy sent -&gt; received</button>
+            <button id="btnError" class="btn btn-warn">Introduce +1 error</button>
+          </div>
+
+          <div class="hint">Use this section to simulate transmission with or without errors.</div>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="card-title">3) Receiver</div>
+        <div class="form">
+          <div class="row">
+            <div class="kv">
+              <div class="k">Receiver checksum</div>
+              <div id="receiverChecksum" class="v">-</div>
+              <div id="receiverModulo" class="muted mono">-</div>
+            </div>
+            <button id="btnVerify" class="btn btn-primary">Verify</button>
+            <button id="btnReset" class="btn btn-ghost">Reset</button>
+          </div>
+
+          <div class="kv">
+            <div class="k">Transmitted frame (data | checksum)</div>
+            <div id="txFrameReceiver" class="v mono">-</div>
+          </div>
+
+          <div id="result" class="result result-neutral">
+            <div class="result-title">Ready</div>
+            <div class="result-body">Compute sender checksum, set received data, then verify.</div>
+          </div>
+
+          <details class="details">
+            <summary>How it works</summary>
+            <div class="details-body">
+              <div>Sender checksum = (sentData mod key/modulus)</div>
+              <div>Receiver checksum = (receivedData mod key/modulus)</div>
+              <div>If both checksums match, no error is detected.</div>
+            </div>
+          </details>
+        </div>
+      </article>
+
+      <article class="card span-3">
+        <div class="card-title">Full Step-by-Step Simulation (Workflow)</div>
+        <div class="sim">
+          <div class="sim-controls">
+            <label>
+              <span>Error delta (optional)</span>
+              <input id="errorDelta" inputmode="numeric" placeholder="e.g., 1 (adds to received data)" />
+            </label>
+
+            <label>
+              <span>Error mode</span>
+              <select id="errorMode" class="select">
+                <option value="delta" selected>Add delta</option>
+              </select>
+            </label>
+
+            <div>
+              <div class="label">Execution mode</div>
+              <div class="toggle" role="group" aria-label="Execution mode">
+                <label class="toggle-item">
+                  <input type="radio" name="execMode" value="stop" checked />
+                  <span>Stop on error</span>
+                </label>
+                <label class="toggle-item">
+                  <input type="radio" name="execMode" value="full" />
+                  <span>Full execution</span>
+                </label>
+              </div>
+            </div>
+
+            <div class="sim-actions">
+              <button id="btnSimulate" class="btn btn-primary">Start Simulation</button>
+              <button id="btnPrev" class="btn" type="button">Back</button>
+              <button id="btnNext" class="btn" type="button">Next</button>
+              <button id="btnPause" class="btn" type="button">Pause</button>
+              <button id="btnStop" class="btn btn-warn" type="button">Stop</button>
+              <button id="btnClear" class="btn btn-ghost">Clear Timeline</button>
+            </div>
+          </div>
+
+          <div id="visual" class="timeline" aria-live="polite"></div>
+        </div>
+      </article>
+
+      <article class="card span-3">
+        <div class="card-title">Run History</div>
+        <div class="history-actions">
+          <button id="btnExportCsv" class="btn">Export CSV</button>
+          <button id="btnClearHistory" class="btn btn-ghost">Clear History</button>
+        </div>
+
+        <div class="history">
+          <table class="table" aria-label="Run history">
+            <thead>
+              <tr>
+                <th>Time</th>
+                <th>Sent</th>
+                <th>Key/Modulus</th>
+                <th>Received</th>
+                <th>Sender CS</th>
+                <th>Receiver CS</th>
+                <th>Result</th>
+                <th>Source</th>
+              </tr>
+            </thead>
+            <tbody id="historyBody"></tbody>
+          </table>
+        </div>
+      </article>
+
+      <article class="card span-3">
+        <div class="card-title">Binary ↔ Decimal Converter (Extra Demo)</div>
+        <div class="form">
+          <div class="row">
+            <label style="flex: 1; min-width: 240px;">
+              <span>Binary (base-2)</span>
+              <input id="binInput" inputmode="numeric" placeholder="e.g., 101101" />
+            </label>
+
+            <label style="flex: 1; min-width: 240px;">
+              <span>Decimal (base-10 integer)</span>
+              <input id="decInput" inputmode="numeric" placeholder="e.g., 45" />
+            </label>
+          </div>
+
+          <div class="row">
+            <button id="btnBinToDec" class="btn btn-primary" type="button">Binary → Decimal</button>
+            <button id="btnDecToBin" class="btn btn-primary" type="button">Decimal → Binary</button>
+            <button id="btnConvClear" class="btn btn-ghost" type="button">Clear</button>
+          </div>
+
+          <div class="row">
+            <div class="kv">
+              <div class="k">Result</div>
+              <div id="convResult" class="v mono">-</div>
+            </div>
+          </div>
+
+          <details class="details">
+            <summary>How conversion works</summary>
+            <div class="details-body">
+              <div><b>Binary → Decimal:</b> add powers of 2 where bit = 1.</div>
+              <div>Example: 101101₂ = 32 + 8 + 4 + 1 = 45₁₀</div>
+              <div><b>Decimal → Binary:</b> repeated divide-by-2, read remainders bottom → top.</div>
+            </div>
+          </details>
+        </div>
+      </article>
+    </section>
+
+    <footer class="footer">
+      <div class="muted">Localhost mode: run <code>java -cp . ErrorDetectionNumberTheory --server --port=8080</code></div>
+      <div class="muted">CLI mode: run <code>java -cp . ErrorDetectionNumberTheory --cli</code></div>
+    </footer>
+  </main>
+
+  <script src="/app.js"></script>
+</body>
+</html>
